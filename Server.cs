@@ -26,7 +26,7 @@ namespace MercuryClient
         private void Server_FormClosed(object sender, FormClosedEventArgs e)
         {
             // TODO: Добавить проверу работу сервера
-            if (server.Option.Port == 9005)
+            if (startSetver == true)
             {
                 server.Stop();
             }
@@ -78,15 +78,18 @@ namespace MercuryClient
 
                 });
                 server.Start();
+                startSetver = true;
                 labelStatus.Text = "Сервер включен";
         }
   
 
         private void button_Close_Click(object sender, EventArgs e)
         {
-           
+            if (startSetver == true)
+            {
                 server.Stop();
                 labelStatus.Text = "Сервер отключен";
+            }
         }
 
         private void labelStatus_TextChanged(object sender, EventArgs e)
