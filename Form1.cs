@@ -14,9 +14,9 @@ namespace MercuryClient
         private string connectionString = "DATA SOURCE=localhost:1521/xepdb1;PASSWORD=vetis;USER ID=VETIS";
 
         
-        DataBase dataBase;
-        OracleDataReader data;
-        DataTable dataTable;
+        private DataBase dataBase;
+        private OracleDataReader data;
+        private DataTable dataTable;
 
         public Form1()
         {
@@ -128,6 +128,7 @@ namespace MercuryClient
                 // Находим индекс столбца "Action" и удаляем его
                 int columnIndex = dataGridView.Columns["Гашение"].Index;
                 dataGridView.Columns.RemoveAt(columnIndex);
+                
             }
 
         }

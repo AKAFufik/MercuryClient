@@ -20,7 +20,7 @@ namespace MercuryClient
         public void OpenConnection()
         {
             _connection.Open();
-            
+
         }
 
         public void CloseConnection()
@@ -33,7 +33,7 @@ namespace MercuryClient
             var command = new OracleCommand("select t1.PRODUCTITEM_NAME AS \"Продукт\", t1.volume AS \"Вес\", t2.create_date AS \"Дата Добавления\", " +
                 "t2.guid, t1.owner_doc_uuid AS UUID from BATCH t1 JOIN STOCK_ENTRY t2 ON t2.uuid = t1.owner_doc_uuid where t2.is_active=1", _connection);
 
-          return command.ExecuteReader();
+            return command.ExecuteReader();
         }
 
         public OracleDataReader VSD()
@@ -71,7 +71,7 @@ namespace MercuryClient
             OracleCommand command = _connection.CreateCommand();
             command.CommandText = "BEGIN :1 := VETIS.PKG_VETIS_API_MMK_V2.PREPAREINCOMINGVSD(:l_PVSD_UUID); END;";
 
-        
+
             OracleParameter retValParam = new OracleParameter(":1", OracleDbType.Varchar2, 32767);
             retValParam.Direction = ParameterDirection.Output;
             command.Parameters.Add(retValParam);
@@ -80,7 +80,7 @@ namespace MercuryClient
             pvsdUuidParam.Value = l_PVSD_UUID;
             command.Parameters.Add(pvsdUuidParam);
             command.ExecuteNonQuery();
-      
+
 
             return retValParam.Value.ToString();
         }
@@ -90,7 +90,7 @@ namespace MercuryClient
             OracleCommand command = _connection.CreateCommand();
             command.CommandText = "BEGIN VETIS.PKG_VETIS_API_MMK_V2.INCOMEVSD(:l_PPVSD_UUID); END;";
 
-           
+
             OracleParameter pPvsdUuidParam = new OracleParameter(":l_PPVSD_UUID", OracleDbType.Varchar2, 32767);
             pPvsdUuidParam.Value = l_PVSD_UUID;
             command.Parameters.Add(pPvsdUuidParam);
@@ -102,7 +102,7 @@ namespace MercuryClient
             OracleCommand command = _connection.CreateCommand();
             command.CommandText = "BEGIN :1 := VETIS.PKG_VETIS_API_MMK_V2.PREPAREMERGESTOCKENTRY(:l_PFIRST_MERC_STOCK_ENTRY_UUID, :l_PSECOND_MERC_STOCK_ENTRY_UUID, :l_PTYPE_TRANSACT); END;";
 
-            
+
             OracleParameter retValParam = new OracleParameter(":1", OracleDbType.Varchar2, 32767);
             retValParam.Direction = ParameterDirection.Output;
             command.Parameters.Add(retValParam);
@@ -135,6 +135,27 @@ namespace MercuryClient
 
         }
 
+        public List<VSD> FetchVSDs()
+        {
+            List<VSD> VSDs = new List<VSD>();
+            OracleCommand command = new OracleCommand("select t1.PRODUCTITEM_NAME, t1.volume, t1.owner_doc_uuid AS UUID " +
+                "from BATCH t1 JOIN VSD t2 ON t2.uuid = t1.owner_doc_uuid " +
+                "where t2.LAST_CHANGE_DOC_UUID is NULL and t2.IN_OUT='INCOMING'", _connection);
+
+            using (OracleDataReader reader = command.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    VSDs.Add(new VSD
+                    {
+                        Name = reader["PRODUCTITEM_NAME"].ToString(),
+                        Volume = Convert.ToInt32(reader["VOLUME"]),
+                        Uuid = reader["UUID"].ToString()
+                    });
+                }
+            }
+            return VSDs;
+        }
 
         public OracleDataReader ExecuteReader(string sqlCommand)
         {

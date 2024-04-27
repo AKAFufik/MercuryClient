@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using SocketIOSharp.Common;
 using SocketIOSharp.Server;
 using System;
+using System.Data.Entity;
 using System.Windows.Forms;
 
 
@@ -10,13 +11,16 @@ namespace MercuryClient
 {
     public partial class Server : Form
     {
-        SocketIOServer server;
-        bool startSetver = false;
+        private SocketIOServer server;
+        private bool startSetver = false;
+        private string connectionString = "DATA SOURCE=localhost:1521/xepdb1;PASSWORD=vetis;USER ID=VETIS";
+        private DataBase dataBase;
         public Server()
         {
             InitializeComponent();
             labelStatus.Text = "Сервер отключен";
             textBoxMessage.ReadOnly = true;
+            dataBase = new DataBase(connectionString);
         }
 
         private void Server_Load(object sender, EventArgs e)
@@ -25,7 +29,6 @@ namespace MercuryClient
         }
         private void Server_FormClosed(object sender, FormClosedEventArgs e)
         {
-            // TODO: Добавить проверу работу сервера
             if (startSetver == true)
             {
                 server.Stop();
@@ -62,19 +65,20 @@ namespace MercuryClient
 
                     socket.On("getVSD", () =>
                     {
-                        var jsonObject = new
+                        try
                         {
-                            ItemVSDs = new[]
-                            {
-                                new { Name = "John", Description = "111111111111111111111" },
-                                new { Name = "Alice", Description = "22222222222222222222" },
-                                new { Name = "Bob", Description = "3333333333333333333333" }
-                            }
-                        };
-                        string jsonData = JsonConvert.SerializeObject(jsonObject);
-                        socket.Emit("echo", jsonData);
+                            dataBase.OpenConnection();
+                            var VSDs = dataBase.FetchVSDs();
+                            string jsonData = JsonConvert.SerializeObject(VSDs, Formatting.Indented);
+                            socket.Emit("echo", jsonData);
+                            dataBase.CloseConnection();
+                        }
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.Message);
+                        }
                     });
-                    
+
 
                 });
                 server.Start();

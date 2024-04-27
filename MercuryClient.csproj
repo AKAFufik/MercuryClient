@@ -160,6 +160,7 @@
     <Compile Include="Server.Designer.cs">
       <DependentUpon>Server.cs</DependentUpon>
     </Compile>
+    <Compile Include="VSD.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
